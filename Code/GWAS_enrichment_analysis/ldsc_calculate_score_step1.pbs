@@ -1,0 +1,136 @@
+#PBS -l walltime=72:00:00
+#PBS -l select=1:ncpus=16:mem=96gb
+
+
+module load anaconda3/personal
+source activate ldsc
+
+
+cd /rds/general/user/jj1419/ephemeral/project/ldsc-run/bulk/modules
+
+
+
+interesting_list="
+Adipocytes_alldeg_genelist_ensembl.txt
+Adipocytes_background_ensembl.txt
+Adipocytes_downdeg_genelist_ensembl.txt
+Adipocytes_updeg_genelist_ensembl.txt
+Atrial_Cardiomyocyte_alldeg_genelist_ensembl.txt
+Atrial_Cardiomyocyte_background_ensembl.txt
+Atrial_Cardiomyocyte_downdeg_genelist_ensembl.txt
+Atrial_Cardiomyocyte_updeg_genelist_ensembl.txt
+Cardiomyocyte_alldeg_genelist_ensembl.txt
+Cardiomyocyte_background_ensembl.txt
+Cardiomyocyte_downdeg_genelist_ensembl.txt
+Cardiomyocyte_updeg_genelist_ensembl.txt
+Endothelial_alldeg_genelist_ensembl.txt
+Endothelial_background_ensembl.txt
+Endothelial_downdeg_genelist_ensembl.txt
+Endothelial_updeg_genelist_ensembl.txt
+Fibroblast_alldeg_genelist_ensembl.txt
+Fibroblast_background_ensembl.txt
+Fibroblast_downdeg_genelist_ensembl.txt
+Fibroblast_updeg_genelist_ensembl.txt
+Lymphoid_alldeg_genelist_ensembl.txt
+Lymphoid_background_ensembl.txt
+Lymphoid_downdeg_genelist_ensembl.txt
+Lymphoid_updeg_genelist_ensembl.txt
+Mesothelial_alldeg_genelist_ensembl.txt
+Mesothelial_background_ensembl.txt
+Mesothelial_downdeg_genelist_ensembl.txt
+Mesothelial_updeg_genelist_ensembl.txt
+Myeloid_alldeg_genelist_ensembl.txt
+Myeloid_background_ensembl.txt
+Myeloid_downdeg_genelist_ensembl.txt
+Myeloid_updeg_genelist_ensembl.txt
+Neuronal_alldeg_genelist_ensembl.txt
+Neuronal_background_ensembl.txt
+Neuronal_downdeg_genelist_ensembl.txt
+Neuronal_updeg_genelist_ensembl.txt
+Pericytes_alldeg_genelist_ensembl.txt
+Pericytes_background_ensembl.txt
+Pericytes_downdeg_genelist_ensembl.txt
+Pericytes_updeg_genelist_ensembl.txt
+Smooth_muscle_cells_alldeg_genelist_ensembl.txt
+Smooth_muscle_cells_background_ensembl.txt
+Smooth_muscle_cells_downdeg_genelist_ensembl.txt
+Smooth_muscle_cells_updeg_genelist_ensembl.txt
+Ventricular_Cardiomyocyte_alldeg_genelist_ensembl.txt
+Ventricular_Cardiomyocyte_background_ensembl.txt
+Ventricular_Cardiomyocyte_downdeg_genelist_ensembl.txt
+Ventricular_Cardiomyocyte_updeg_genelist_ensembl.txt
+"
+
+
+
+sumstat_file="
+2hGlu_2021    
+RTC_UKB     
+FG_2021          
+FI_2021             
+Glu_UKB       
+T2D     
+HDLC_UKB                    
+BMI_UKB       
+HbA1c_2021     
+CAD           
+IHD            
+CHD_UKB       
+IHD_UKB        
+diastolic     
+systolic_bp
+LDLC_UKB
+UKB_460K.body_HEIGHTz
+UKB_460K.cov_EDU_YEARS
+UKB_460K.pigment_HAIR
+UKB_460K.pigment_SKIN
+EPI_DR_2014  
+MDD_2018
+ADHD_2019
+EPI_FD_2018 
+NEUR_2018
+AD_2019    
+EPI_GEN_2018
+PD_2019
+AF_UKB     
+EPI_ILAE_2014
+ALS_2018
+SCZ_2021
+ANX_CC_2016
+SD_2019
+ANX_FS_2016
+FTD_2017    
+SWB_2016
+AN_2017
+"
+
+
+for genelist in $interesting_list
+do
+    for chrom in {1..22}
+    do
+    echo "Make ldsc-friendly annotation files for Chr ${chrom} in gene list ${genelist}"
+    python  /rds/general/user/jj1419/home/app/ldsc/make_annot.py \
+            --gene-set-file ${genelist} \
+            --gene-coord-file /rds/general/user/jj1419/home/app/ldsc/ENSG_coord.txt \
+            --windowsize 100000 \
+            --bimfile /rds/general/user/jj1419/home/app/ldsc-reference/1000G_EUR_Phase3_plink/1000G.EUR.QC.${chrom}.bim \
+            --annot-file ./anno_files/${genelist}.${chrom}.annot.gz
+    done
+
+
+#Computing LD scores with an annot file for gene list
+
+    for chrom in {1..22}
+    do
+    echo "Computing LD scores with the annot file ${genelist}.${chrom}.annot.gz"
+    python  /rds/general/user/jj1419/home/app/ldsc/ldsc.py \
+         --l2 \
+         --bfile /rds/general/user/jj1419/home/app/ldsc-reference/1000G_EUR_Phase3_plink/1000G.EUR.QC.${chrom} \
+         --ld-wind-cm 1 \
+         --annot ./anno_files/${genelist}.${chrom}.annot.gz \
+         --thin-annot \
+         --out ./LDscores/${genelist}.${chrom} \
+         --print-snps /rds/general/user/jj1419/home/app/ldsc-reference/listHM3.txt
+    done
+done

@@ -1,0 +1,50 @@
+cd /rds/general/user/jj1419/ephemeral/project/diabetes/data/gwas_sumstat/formatted
+
+python /rds/general/user/jj1419/home/app/ldsc/munge_sumstats.py \
+--sumstats filter_UKBB_covid19.txt \
+--merge-alleles /rds/general/user/jj1419/home/app/ldsc-reference/w_hm3.snplist \
+--out UKBB_COVID19 \
+--chunksize 500000
+
+
+
+
+
+
+
+#loop format
+cd /rds/general/user/jj1419/ephemeral/project/diabetes/data/gwas_sumstat/formatted
+
+sumstat_file="
+2hGlu_2021  
+CKD_CKDGEN_2019  
+HbA1c_2021 
+T2D
+AF_UKB      
+FG_2021         
+IHD        
+diastolic
+BMI_UKB    
+FI_2021          
+IHD_UKB     
+systolic_bp
+CAD        
+Glu_UKB         
+LDLC_UKB    
+CHD_UKB    
+HDLC_UKB         
+RTC_UKB
+"
+
+for LINE in $sumstat_file
+do
+
+    echo "the trait ${LINE} is processing" 
+	python /rds/general/user/jj1419/home/app/ldsc/munge_sumstats.py \
+	--sumstats ${LINE}.sumstats \
+	--chunksize 500000 \
+	--merge-alleles /rds/general/user/jj1419/home/app/ldsc-reference/w_hm3.snplist \
+	--ignore MINOR_ALLELE,OTHER_ALLELE \
+	--out ${LINE} 
+
+done

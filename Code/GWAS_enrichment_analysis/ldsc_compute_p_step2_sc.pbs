@@ -1,0 +1,125 @@
+#PBS -l walltime=72:00:00
+#PBS -l select=1:ncpus=16:mem=96gb
+
+
+module load anaconda3/personal
+source activate ldsc
+
+
+cd /rds/general/user/jj1419/ephemeral/project/ldsc-run/bulk/modules
+
+
+
+interesting_list="
+Adipocytes_alldeg_genelist_ensembl.txt
+Adipocytes_background_ensembl.txt
+Adipocytes_downdeg_genelist_ensembl.txt
+Adipocytes_updeg_genelist_ensembl.txt
+Atrial_Cardiomyocyte_alldeg_genelist_ensembl.txt
+Atrial_Cardiomyocyte_background_ensembl.txt
+Atrial_Cardiomyocyte_downdeg_genelist_ensembl.txt
+Atrial_Cardiomyocyte_updeg_genelist_ensembl.txt
+Cardiomyocyte_alldeg_genelist_ensembl.txt
+Cardiomyocyte_background_ensembl.txt
+Cardiomyocyte_downdeg_genelist_ensembl.txt
+Cardiomyocyte_updeg_genelist_ensembl.txt
+Endothelial_alldeg_genelist_ensembl.txt
+Endothelial_background_ensembl.txt
+Endothelial_downdeg_genelist_ensembl.txt
+Endothelial_updeg_genelist_ensembl.txt
+Fibroblast_alldeg_genelist_ensembl.txt
+Fibroblast_background_ensembl.txt
+Fibroblast_downdeg_genelist_ensembl.txt
+Fibroblast_updeg_genelist_ensembl.txt
+Lymphoid_alldeg_genelist_ensembl.txt
+Lymphoid_background_ensembl.txt
+Lymphoid_downdeg_genelist_ensembl.txt
+Lymphoid_updeg_genelist_ensembl.txt
+Mesothelial_alldeg_genelist_ensembl.txt
+Mesothelial_background_ensembl.txt
+Mesothelial_downdeg_genelist_ensembl.txt
+Mesothelial_updeg_genelist_ensembl.txt
+Myeloid_alldeg_genelist_ensembl.txt
+Myeloid_background_ensembl.txt
+Myeloid_downdeg_genelist_ensembl.txt
+Myeloid_updeg_genelist_ensembl.txt
+Neuronal_alldeg_genelist_ensembl.txt
+Neuronal_background_ensembl.txt
+Neuronal_downdeg_genelist_ensembl.txt
+Neuronal_updeg_genelist_ensembl.txt
+Pericytes_alldeg_genelist_ensembl.txt
+Pericytes_background_ensembl.txt
+Pericytes_downdeg_genelist_ensembl.txt
+Pericytes_updeg_genelist_ensembl.txt
+Smooth_muscle_cells_alldeg_genelist_ensembl.txt
+Smooth_muscle_cells_background_ensembl.txt
+Smooth_muscle_cells_downdeg_genelist_ensembl.txt
+Smooth_muscle_cells_updeg_genelist_ensembl.txt
+Ventricular_Cardiomyocyte_alldeg_genelist_ensembl.txt
+Ventricular_Cardiomyocyte_background_ensembl.txt
+Ventricular_Cardiomyocyte_downdeg_genelist_ensembl.txt
+Ventricular_Cardiomyocyte_updeg_genelist_ensembl.txt
+"
+
+
+
+sumstat_file="
+2hGlu_2021    
+RTC_UKB     
+FG_2021          
+FI_2021             
+Glu_UKB       
+T2D     
+HDLC_UKB
+LDLC_UKB                 
+BMI_UKB       
+HbA1c_2021     
+CAD           
+IHD            
+CHD_UKB       
+IHD_UKB
+AF_UKB        
+diastolic     
+systolic_bp
+
+
+UKB_460K_body_HEIGHTz
+UKB_460K_cov_EDU_YEARS
+UKB_460K_pigment_HAIR
+UKB_460K_pigment_SKIN
+
+UKBB_COVID19 
+
+EPI_DR_2014  
+MDD_2018
+ADHD_2019
+EPI_FD_2018 
+NEUR_2018
+AD_2019    
+EPI_GEN_2018
+PD_2019   
+EPI_ILAE_2014
+ALS_2018
+SCZ_2021
+ANX_CC_2016
+SD_2019
+ANX_FS_2016
+FTD_2017    
+SWB_2016
+AN_2017
+"
+
+cp ./anno_files/*.gz ./LDscores/
+for LINE in $sumstat_file
+do
+	echo "the trait ${LINE} is processing"	
+	python /rds/general/user/jj1419/home/app/ldsc/ldsc.py \
+	   --h2-cts ./sumstats/${LINE}.sumstats.gz \
+	   --ref-ld-chr /rds/general/user/jj1419/home/app/ldsc-reference/1000G_Phase3_baselineLD_v2.2_ldscores/baselineLD. \
+	   --w-ld-chr /rds/general/user/jj1419/home/app/ldsc-reference/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
+       --ref-ld-chr-cts ./h2cts/nature_hha_sex_diff.ldcts \
+	   --out ./h2cts/${LINE}.nature_hha_sex_diff
+done
+
+
+
