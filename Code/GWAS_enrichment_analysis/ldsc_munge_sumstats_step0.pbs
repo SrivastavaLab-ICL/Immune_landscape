@@ -1,20 +1,5 @@
 cd /rds/general/user/jj1419/ephemeral/project/diabetes/data/gwas_sumstat/formatted
 
-python /rds/general/user/jj1419/home/app/ldsc/munge_sumstats.py \
---sumstats filter_UKBB_covid19.txt \
---merge-alleles /rds/general/user/jj1419/home/app/ldsc-reference/w_hm3.snplist \
---out UKBB_COVID19 \
---chunksize 500000
-
-
-
-
-
-
-
-#loop format
-cd /rds/general/user/jj1419/ephemeral/project/diabetes/data/gwas_sumstat/formatted
-
 sumstat_file="
 2hGlu_2021  
 CKD_CKDGEN_2019  
